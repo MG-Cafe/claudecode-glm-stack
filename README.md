@@ -15,13 +15,7 @@ Most importantly: **your normal Claude Code stays untouched**. Plain `claude` ke
 1. Go to https://docs.z.ai
 2. Sign in to Z.ai / Zhipu AI
 3. Create an API key
-4. Make sure the account has an active balance or resource package
-
-If your account has no balance/package, the setup can still be correct but requests will fail with:
-
-```text
-1113: Insufficient balance or no resource package. Please recharge.
-```
+4. Copy the key for the local setup below
 
 ### 2. Save the key locally
 
@@ -93,7 +87,7 @@ claude --bare --settings ~/.config/mg-glm/claude-glm-settings.json \
   --model sonnet \
   -p "Reply with: SWAP_TEST" < /dev/null
 
-grep -E "api.z.ai|glm-5.2|/api/anthropic/v1/messages|1113" /tmp/glm-check.log | head -5
+grep -E "api.z.ai|glm-5.2|/api/anthropic/v1/messages" /tmp/glm-check.log | head -5
 ```
 
 You should see `glm-5.2`, `/api/anthropic/v1/messages`, or `api.z.ai` in the debug output. If you see a Vertex URL like `projects/.../publishers/anthropic`, your normal backend is still winning and you should re-check `--bare`, `--settings`, and the empty Vertex keys in the JSON.
@@ -114,7 +108,7 @@ Z.ai documents a long-context GLM-5.2 variant for Claude Code:
 }
 ```
 
-If `glm-5.2[1m]` returns an unknown-model error, use the default `glm-5.2` settings above. In my local API probe on June 21, 2026, `glm-5.2` reached Z.ai correctly, while `glm-5.2[1m]` was rejected by the Anthropic-compatible endpoint I tested.
+If `glm-5.2[1m]` returns an unknown-model error, use the default `glm-5.2` settings above.
 
 ---
 
@@ -159,10 +153,6 @@ The setup is isolated because the provider details live in `~/.config/mg-glm/cla
 ---
 
 ## Troubleshooting
-
-**`1113 Insufficient balance or no resource package`**
-
-Your key and endpoint reached Z.ai, but the account needs balance or a resource package before the model can answer.
 
 **`1211 Unknown Model`**
 
