@@ -1,6 +1,6 @@
-# Run GLM-5.2 in Claude Code
+# Run GLM-5.2 1M in Claude Code
 
-This guide routes Claude Code's API calls through **Z.ai GLM-5.2 instead of Anthropic** -- same Claude Code UI, same skills, same workflow.
+This guide routes Claude Code's API calls through **Z.ai GLM-5.2 1M instead of Anthropic** -- same Claude Code UI, same skills, same workflow.
 
 It uses Z.ai's Anthropic-compatible endpoint, so Claude Code can talk to GLM directly. No local proxy is required.
 
@@ -26,8 +26,6 @@ chmod 600 ~/.config/mg-glm/key.env
 source ~/.config/mg-glm/key.env
 ```
 
-Do not paste your real key into this repo, a README, a video description, or your shell history if you are recording.
-
 ### 3. Create a Claude Code settings override
 
 Most Claude Code installs already have a provider configured: Anthropic login, Vertex AI, AWS Bedrock, or an API key. Inline env-var prefixes can lose that precedence fight. The reliable approach is a dedicated `--settings` override file.
@@ -42,9 +40,11 @@ cat > ~/.config/mg-glm/claude-glm-settings.json <<EOF
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "$ZAI_API_KEY",
     "ANTHROPIC_API_KEY": "$ZAI_API_KEY",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2",
+    "ANTHROPIC_MODEL": "glm-5.2[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5.2[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2[1m]",
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
     "API_TIMEOUT_MS": "3000000"
   }
 }
@@ -54,7 +54,7 @@ chmod 600 ~/.config/mg-glm/claude-glm-settings.json
 
 The empty strings neutralize Vertex / Bedrock defaults for this one command. `ANTHROPIC_BASE_URL` points Claude Code at Z.ai, and the model keys map Claude Code's normal aliases to GLM.
 
-### 4. Run Claude Code on GLM-5.2
+### 4. Run Claude Code on GLM-5.2 1M
 
 ```bash
 claude --bare \
@@ -63,7 +63,7 @@ claude --bare \
   "Build me a REST API with auth, JWT, and tests"
 ```
 
-That command talks to GLM-5.2. Plain `claude` without those flags keeps using your normal backend.
+That command talks to GLM-5.2 1M. Plain `claude` without those flags keeps using your normal backend.
 
 `--bare` is required. It tells Claude Code to read auth from the settings file instead of your OAuth keychain or auto-detected providers.
 
@@ -87,28 +87,10 @@ claude --bare --settings ~/.config/mg-glm/claude-glm-settings.json \
   --model sonnet \
   -p "Reply with: SWAP_TEST" < /dev/null
 
-grep -E "api.z.ai|glm-5.2|/api/anthropic/v1/messages" /tmp/glm-check.log | head -5
+grep -E "api.z.ai|glm-5\\.2|/api/anthropic/v1/messages" /tmp/glm-check.log | head -5
 ```
 
-You should see `glm-5.2`, `/api/anthropic/v1/messages`, or `api.z.ai` in the debug output. If you see a Vertex URL like `projects/.../publishers/anthropic`, your normal backend is still winning and you should re-check `--bare`, `--settings`, and the empty Vertex keys in the JSON.
-
----
-
-## Optional: 1M context model
-
-Z.ai documents a long-context GLM-5.2 variant for Claude Code:
-
-```json
-{
-  "env": {
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2[1m]",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2[1m]",
-    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000"
-  }
-}
-```
-
-If `glm-5.2[1m]` returns an unknown-model error, use the default `glm-5.2` settings above.
+You should see `glm-5.2[1m]`, `/api/anthropic/v1/messages`, or `api.z.ai` in the debug output. If you see a Vertex URL like `projects/.../publishers/anthropic`, your normal backend is still winning and you should re-check `--bare`, `--settings`, and the empty Vertex keys in the JSON.
 
 ---
 
@@ -120,7 +102,7 @@ Two terminals, two backends, no conflicts:
 # Terminal 1 -- your normal Claude Code, unchanged
 claude --model opus "Architect a multi-region failover system"
 
-# Terminal 2 -- GLM-5.2 through Z.ai
+# Terminal 2 -- GLM-5.2 1M through Z.ai
 claude --bare --settings ~/.config/mg-glm/claude-glm-settings.json \
   --model sonnet \
   "Refactor this codebase to async/await"
@@ -137,7 +119,7 @@ alias claude-glm='claude --bare --settings ~/.config/mg-glm/claude-glm-settings.
 
 Then:
 
-- `claude-glm "Refactor this"` -> GLM-5.2
+- `claude-glm "Refactor this"` -> GLM-5.2 1M
 - `claude "Hard problem"` -> your default Claude Code backend
 
 Do not alias plain `claude` unless you intentionally want GLM to become your default.
@@ -153,10 +135,6 @@ The setup is isolated because the provider details live in `~/.config/mg-glm/cla
 ---
 
 ## Troubleshooting
-
-**`1211 Unknown Model`**
-
-Use `glm-5.2` instead of `glm-5.2[1m]`. The long-context alias may depend on the current Z.ai plan, endpoint, or Claude Code integration state.
 
 **`Auth conflict` warning**
 
