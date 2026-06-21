@@ -1,0 +1,16 @@
+.env
+*.env
+key.env
+*.key
+*.secret
+
+claude-glm-settings.json
+settings.local.json
+
+*.log
+debug.log
+check.log
+
+.DS_Store
+.claude/
+.claude-code-router/
